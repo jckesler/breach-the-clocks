@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Breach the Clocks</title>
+<meta name="description" content="Map the breach notification clocks for three fictional incidents: who has to be told, when each clock starts, and when it runs out.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Same visual system as The 2AM Page. Layout: case brief on the left, the clock map on the right; stacks on phones. */
+:root{
+  --bg:#f3f1ee; --panel:#ffffff; --ink:#1c1a19; --muted:#6a6460; --line:#dcd6d0;
+  --red:#cc0000; --red-soft:#fbe6e6; --aqua:#00796b; --aqua-soft:#e2f2ef; --amber:#a35a00; --amber-soft:#fbefdc;
+  --good:#2e7d4f; --good-soft:#e3f2e8; --shadow:0 1px 0 rgba(0,0,0,.04);
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#161413; --panel:#211e1c; --ink:#f1ece8; --muted:#a69d97; --line:#3a3532;
+  --red:#ff6b6b; --red-soft:#3a1f1f; --aqua:#4fc3b1; --aqua-soft:#16302c; --amber:#f0a94b; --amber-soft:#35281a;
+  --good:#6fcf97; --good-soft:#18301f; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161413; --panel:#211e1c; --ink:#f1ece8; --muted:#a69d97; --line:#3a3532;
+  --red:#ff6b6b; --red-soft:#3a1f1f; --aqua:#4fc3b1; --aqua-soft:#16302c; --amber:#f0a94b; --amber-soft:#35281a;
+  --good:#6fcf97; --good-soft:#18301f; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.1;text-wrap:balance;margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid var(--aqua);outline-offset:2px}
+a{color:var(--aqua)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--red);padding-bottom:10px;margin-bottom:22px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:28px;letter-spacing:.01em}
+.brand .eyebrow{color:var(--red)}
+.linkbtn{background:none;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:14px;color:var(--muted)}
+.linkbtn:hover{border-color:var(--ink);color:var(--ink)}
+.primary{background:var(--red);color:#fff;border:0;border-radius:8px;padding:13px 22px;font-weight:600;font-size:16px}
+.primary:hover{filter:brightness(1.08)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}
+.note{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);align-self:flex-start}
+/* intro */
+.intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
+.intro h2{font-size:44px;margin:6px 0 14px}
+.intro .lede{font-size:19px;max-width:60ch;margin:0 0 12px}
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow)}
+.rules h3{font-size:20px}
+.rules ul{margin:8px 0 0;padding-left:18px}
+.rules li{margin:6px 0}
+.cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.case{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.case:hover{border-color:var(--ink)}
+.case h3{font-size:21px}
+.case p{margin:0;font-size:14px;color:var(--muted)}
+/* case screen */
+.board{display:grid;grid-template-columns:340px minmax(0,1fr);gap:22px;align-items:start}
+.brief{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;box-shadow:var(--shadow);position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 24px);overflow:auto}
+.brief h2{font-size:28px;margin:4px 0 2px}
+.brief .sub{font-size:13px;color:var(--muted);margin-bottom:12px}
+.brief h3{font-size:17px;margin:16px 0 6px}
+.facts{margin:0;padding-left:18px;font-size:14px}
+.facts li{margin:4px 0}
+.events{list-style:none;margin:0;padding:0;font-size:14px}
+.events li{display:grid;grid-template-columns:84px minmax(0,1fr);gap:8px;padding:7px 0;border-top:1px dashed var(--line)}
+.events li:first-child{border-top:0}
+.events time{font-family:var(--f-mono);font-size:12px;font-weight:600;color:var(--red);font-variant-numeric:tabular-nums;padding-top:2px}
+.map h2{font-size:30px;margin-bottom:6px}
+.map > p{margin:0 0 14px;max-width:68ch}
+.clocks{display:grid;gap:12px}
+.clockrow{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow)}
+.clockrow h3{font-size:19px}
+.clockrow .who{font-size:14px;color:var(--muted);margin:2px 0 10px}
+.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pick label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.pick select{width:100%;background:var(--bg);border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-size:15px;color:var(--ink)}
+.pick select:disabled{opacity:.45}
+.due{margin-top:10px;font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.due b{color:var(--ink);font-weight:600}
+.fb{margin-top:12px;border-radius:8px;padding:12px 14px;border:1px solid var(--line);font-size:14px}
+.fb.best{background:var(--good-soft);border-color:var(--good)}
+.fb.ok{background:var(--amber-soft);border-color:var(--amber)}
+.fb.poor{background:var(--red-soft);border-color:var(--red)}
+.fb p{margin:6px 0 0}
+.verdict{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.best .verdict{color:var(--good)} .ok .verdict{color:var(--amber)} .poor .verdict{color:var(--red)}
+.key{font-family:var(--f-mono);font-size:13px;margin-top:6px}
+.clockrow.checked select{pointer-events:none}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+/* results */
+.summary{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;box-shadow:var(--shadow)}
+.summary h2{font-size:30px;margin-bottom:4px}
+.score{font-family:var(--f-mono);font-size:15px;margin:0 0 12px}
+.order{list-style:none;margin:10px 0 0;padding:0}
+.order li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:15px}
+.order li:first-child{border-top:0}
+.order .when{font-family:var(--f-mono);font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.order .soft .when{color:var(--amber)}
+.order .hard .when{color:var(--red)}
+.order small{display:block;color:var(--muted);font-size:13px}
+.copied{font-size:13px;color:var(--good)}
+.credit{margin-top:32px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.credit a{color:inherit}
+@media (max-width:860px){.intro,.board,.cases{grid-template-columns:minmax(0,1fr)}.brief{position:static;max-height:none}.intro h2{font-size:34px}}
+@media (max-width:520px){.pick{grid-template-columns:minmax(0,1fr)}.order li{grid-template-columns:minmax(0,1fr);gap:2px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><h1>Breach the Clocks</h1><span class="eyebrow">Breach notification exercise</span></div>
+    <button class="linkbtn" id="homeBtn" hidden>All cases</button>
+  </header>
+  <main id="app"></main>
+  <footer class="credit">&copy; 2026 Chuck Kesler &middot; Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" rel="license noopener" target="_blank">CC BY-NC 4.0</a> &middot; A companion to <a href="https://jckesler.github.io/the-2am-page/" target="_blank" rel="noopener">The 2AM Page</a></footer>
+</div>
+<script>
+(function(){
+'use strict';
+
+/* Times are minutes from Monday 00:00 of the incident's first week. */
+var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function t(dayIdx, hh, mm){ return dayIdx*1440 + hh*60 + mm; }
+
+var RULES = [
+  {id:'na',     label:'Doesn\'t apply to this company'},
+  {id:'imm',    label:'Immediately'},
+  {id:'undue',  label:'Without undue delay'},
+  {id:'unreas', label:'Without unreasonable delay'},
+  {id:'h24',    label:'Within 24 hours', h:24},
+  {id:'h36',    label:'Within 36 hours', h:36},
+  {id:'h48',    label:'Within 48 hours', h:48},
+  {id:'h72',    label:'Within 72 hours', h:72},
+  {id:'bd4',    label:'Within 4 business days', bd:4},
+  {id:'d30',    label:'No later than 30 days', d:30},
+  {id:'d60',    label:'No later than 60 days', d:60}
+];
+function rule(id){ for(var i=0;i<RULES.length;i++) if(RULES[i].id===id) return RULES[i]; return null; }
+
+/* Grades: anything not listed is 'poor'. A row whose answer is 'na' ignores the start pick. */
+var C = [];
+
+C.push({
+  id:'harbor', name:'Harbor Ridge Health', tag:'HIPAA', sector:'Regional health system · Norfolk, Virginia',
+  blurb:'Ransomware in a hospital system, and patient records copied on the way out.',
+  facts:[
+    'A nonprofit regional health system: three hospitals and forty clinics. It is a HIPAA covered entity.',
+    'It has no publicly traded stock and isn\'t registered with the SEC.',
+    'It has no operations in the EU and treats no patients there.',
+    'Affected patients: about 180,000, of whom about 171,000 live in Virginia and about 9,000 in North Carolina.',
+    'The copied files hold names, dates of birth, diagnoses and health insurance numbers. No Social Security, driver\'s license or financial account numbers.'
+  ],
+  events:[
+    {id:'e1', at:t(0,5,52),  text:'Files on three servers are encrypted. The note on each says the attackers also have 600 GB of data.'},
+    {id:'e2', at:t(0,6,14),  text:'An incident is declared and the incident log opened.'},
+    {id:'e3', at:t(0,16,30), text:'Forensics finds the way in: a password-only vendor account on the remote-access portal.'},
+    {id:'e4', at:t(1,9,0),   text:'The attackers demand $4.5 million.'},
+    {id:'e5', at:t(3,14,0),  text:'Forensics confirms what was copied: patient records for about 180,000 people, unencrypted.'}
+  ],
+  rows:[
+    {title:'HIPAA: affected individuals', who:'Each patient whose information was involved',
+     start:{e1:'best', e2:'ok'}, rule:{d60:'best', unreas:'ok'}, ans:'e1', ansRule:'d60',
+     why:'HIPAA\'s clock starts at discovery: the first day the breach is known, or would have been known with reasonable diligence. Monday morning\'s ransom note claimed data theft, and HHS treats ransomware that encrypts patient data as a presumed breach, so discovery is Monday, not Thursday\'s forensic report. Notice is due without unreasonable delay and no later than 60 calendar days after discovery. Sixty days is the outer limit, not the target.'},
+    {title:'HIPAA: the HHS Secretary', who:'HHS, through its breach portal (500 or more people affected)',
+     start:{e1:'best', e2:'ok'}, rule:{d60:'best', unreas:'ok'}, ans:'e1', ansRule:'d60',
+     why:'With 500 or more people affected, HHS must be told at the same time as the individuals, so the same 60-day outer limit from Monday\'s discovery applies. Below 500, a covered entity can log the breach and report it to HHS annually.'},
+    {title:'HIPAA: the media', who:'Prominent media outlets in each state with more than 500 affected residents',
+     start:{e1:'best', e2:'ok'}, rule:{d60:'best', unreas:'ok'}, ans:'e1', ansRule:'d60',
+     why:'Media notice is required in each state where more than 500 residents are affected, again without unreasonable delay and within 60 days of discovery. Here that\'s two states: Virginia (about 171,000) and North Carolina (about 9,000). The 500 threshold works differently here than for HHS: it\'s counted per state.'},
+    {title:'Virginia breach notification laws', who:'Virginia residents and the Virginia Attorney General',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'Neither of Virginia\'s laws reaches this incident. The general breach law covers names combined with Social Security, driver\'s license, financial account, passport or military ID numbers, and none were taken. Virginia\'s separate medical information breach law does cover diagnoses and insurance information, but it expressly exempts HIPAA covered entities and business associates. HIPAA\'s notices do the work here.'},
+    {title:'SEC Form 8-K, Item 1.05', who:'Investors, in a public filing',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'The SEC\'s four-business-day rule applies to companies that file reports with the SEC. A nonprofit health system with no registered securities doesn\'t file 8-Ks.'},
+    {title:'GDPR, Article 33', who:'An EU data protection authority',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'The GDPR reaches organizations established in the EU, or ones offering goods or services to (or monitoring) people who are in the EU. Harbor Ridge does neither, so its 72-hour clock doesn\'t start.'}
+  ]
+});
+
+C.push({
+  id:'pinecrest', name:'Pinecrest Outfitters', tag:'SEC 8-K', sector:'Outdoor retailer · publicly traded · Asheville, NC',
+  blurb:'A help-desk reset hands attackers the loyalty database, at a company that files with the SEC.',
+  facts:[
+    'An outdoor retailer with two hundred stores. Its stock trades on a US exchange.',
+    'The loyalty program\'s data belongs to Pinecrest. It isn\'t a bank or a HIPAA covered entity, and the data has no health information.',
+    'Members live in every US state. None are in the EU, and Pinecrest has no operations there.',
+    'Affected members: 2.1 million, including about 410,000 in North Carolina and about 38,000 in Colorado.',
+    'The data: names, addresses and driver\'s license numbers, unencrypted.',
+    'Assume no public holidays fall in the weeks shown.'
+  ],
+  events:[
+    {id:'p1', at:t(4,22,31), text:'The outsourced help desk resets a senior IT administrator\'s password and MFA for a caller posing as her. Nobody knows it\'s an attacker yet.'},
+    {id:'p2', at:t(4,23,10), text:'An alert fires: a new MFA device on the administrator\'s account, which is downloading large exports from the loyalty database.'},
+    {id:'p3', at:t(6,15,0),  text:'The CEO gets an extortion email: the attackers say they have names, addresses and driver\'s license numbers for 2.1 million members.'},
+    {id:'p4', at:t(8,10,0),  text:'Forensics confirms the export: names and driver\'s license numbers for 2.1 million members, unencrypted.'},
+    {id:'p5', at:t(9,16,0),  text:'The disclosure committee determines that the incident is material to investors.'}
+  ],
+  rows:[
+    {title:'SEC Form 8-K, Item 1.05', who:'Investors, in a public filing',
+     start:{p5:'best'}, rule:{bd4:'best'}, ans:'p5', ansRule:'bd4',
+     why:'The four business days start at the materiality determination, not at discovery or the forensic report. The determination day doesn\'t count: Wednesday\'s decision means Thursday, Friday, Monday and Tuesday, so the filing is due the following Tuesday. Separately, the company must make the materiality determination without unreasonable delay, so it can\'t stall the clock by putting off the decision.'},
+    {title:'North Carolina: residents and the Attorney General', who:'About 410,000 NC members, and the AG\'s Consumer Protection Division',
+     start:{p2:'best', p3:'best', p4:'ok'}, rule:{unreas:'best', imm:'ok'}, ans:'p2', ansRule:'unreas',
+     why:'Names plus driver\'s license numbers are personal information under North Carolina law, and unencrypted data in an extortionist\'s hands clears the risk-of-harm test. As the data\'s owner, Pinecrest must notify affected residents without unreasonable delay after discovery, and tell the AG\'s Consumer Protection Division when it does. Discovery came Friday night, when the alert showed the hijacked account exporting the data, and Sunday\'s email removed any doubt. Waiting for Tuesday\'s forensic report treats confirmation as discovery. "Immediately" is the duty of a company holding data it doesn\'t own.'},
+    {title:'North Carolina: the credit bureaus', who:'The three nationwide consumer reporting agencies',
+     start:{p2:'best', p3:'best', p4:'ok'}, rule:{unreas:'best', imm:'ok'}, ans:'p2', ansRule:'unreas',
+     why:'A business that notifies more than 1,000 people at one time must also tell the nationwide credit bureaus, without unreasonable delay. At about 410,000 North Carolina members, Pinecrest is far past the threshold.'},
+    {title:'Colorado: affected residents', who:'About 38,000 Colorado members',
+     start:{p2:'best', p3:'best', p4:'ok'}, rule:{d30:'best', unreas:'ok'}, ans:'p2', ansRule:'d30',
+     why:'Colorado adds a hard limit: notice in the most expedient time possible and without unreasonable delay, but no later than 30 days after the "determination that a security breach occurred," defined as the point when there\'s sufficient evidence to conclude a breach took place. Counsel would count from the earliest defensible point: Friday night\'s alert, or Sunday\'s email at the latest. Tuesday\'s report is a riskier reading that gives away four days. This is why one incident means mapping every state where affected people live.'},
+    {title:'Colorado: the Attorney General', who:'Colorado AG (500 or more Colorado residents affected)',
+     start:{p2:'best', p3:'best', p4:'ok'}, rule:{d30:'best', unreas:'ok'}, ans:'p2', ansRule:'d30',
+     why:'When a breach is reasonably believed to affect 500 or more Colorado residents, the AG must be told on the same timetable: without unreasonable delay, and no later than 30 days after the determination.'},
+    {title:'HIPAA breach notification', who:'Individuals, HHS and the media',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'HIPAA applies to covered entities (health plans, health care clearinghouses and most providers) and their business associates. A retailer\'s loyalty program is neither, and the data holds no health information.'},
+    {title:'GDPR, Article 33', who:'An EU data protection authority',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'No EU establishment, and no offering goods or services to people in the EU, so the GDPR doesn\'t apply.'}
+  ]
+});
+
+C.push({
+  id:'larkspur', name:'Larkspur HR', tag:'Processor', sector:'HR and benefits software vendor · Denver, CO',
+  blurb:'Stolen integration tokens at a vendor that holds other companies\' employee data.',
+  facts:[
+    'A privately held HR software company with 1,400 business customers, about 200 of them in the EU. It has a sales office in Dublin, so it is established in the EU.',
+    'It processes its customers\' employee data on their behalf. For that data, each customer is the controller (GDPR) or the data owner (US state law), and Larkspur is the processor or service provider.',
+    'For the contact details of customer staff in its own CRM, Larkspur is the controller.',
+    'Its standard contract: "Larkspur will notify Customer within 48 hours of confirming a Security Incident affecting Customer Data."',
+    'The exported support files hold employee names, home addresses, Social Security numbers and salaries, including Colorado and North Carolina residents. No health or benefits plan information.'
+  ],
+  events:[
+    {id:'l1', at:t(1,9,5),   text:'A vendor whose chat tool connects to Larkspur\'s CRM emails: attackers stole its integration\'s access tokens.'},
+    {id:'l2', at:t(1,9,40),  text:'Larkspur revokes the integration\'s tokens and disconnects it.'},
+    {id:'l3', at:t(1,11,30), text:'CRM logs show the integration ran unusual bulk exports of CRM records, including customer contacts and support tickets, eight days ago.'},
+    {id:'l4', at:t(1,15,0),  text:'Some exported support tickets contain customers\' API keys and passwords.'},
+    {id:'l5', at:t(2,10,0),  text:'Forensics confirms the export covered every customer account, including files customers uploaded that hold their employees\' records from the HR platform.'}
+  ],
+  rows:[
+    {title:'Customer contract', who:'Each customer whose employee data was exported',
+     start:{l5:'best', l3:'ok', l4:'ok'}, rule:{h48:'best'}, ans:'l5', ansRule:'h48',
+     why:'The contract sets the clock: 48 hours from confirming a security incident affecting Customer Data. That confirmation came Wednesday at 10:00, so notice is due by Friday at 10:00. In practice it\'s often the tightest fixed deadline a vendor has, and counsel would usually tell customers sooner, as soon as there are confirmed facts to share.'},
+    {title:'GDPR: processor to controller', who:'Each EU customer, as controller of its employees\' data',
+     start:{l5:'best', l3:'ok'}, rule:{undue:'best', h48:'ok', h72:'ok'}, ans:'l5', ansRule:'undue',
+     why:'Under Article 33(2), a processor tells the controller without undue delay after becoming aware of a breach. There\'s no fixed hour count, and the contract\'s 48 hours is an outer edge rather than a target. The 72-hour clock belongs to the controller, and it starts when the customer becomes aware, which is why a slow processor makes its customers late.'},
+    {title:'GDPR: Larkspur\'s own regulator notice', who:'Larkspur\'s lead EU supervisory authority, for its own CRM contact data',
+     start:{l3:'best', l4:'best', l1:'ok', l5:'ok'}, rule:{h72:'best', undue:'ok'}, ans:'l3', ansRule:'h72',
+     why:'For the CRM\'s contact records, Larkspur is the controller, so Article 33(1) gives it its own clock: without undue delay and, where feasible, within 72 hours of becoming aware, unless the breach is unlikely to result in a risk to people. Exported tickets containing passwords make that exception hard to claim. "Aware" means a reasonable degree of certainty that personal data was compromised: Tuesday\'s logs at 11:30, not the vendor\'s first warning. That puts the deadline at Friday 11:30.'},
+    {title:'EU customers\' 72-hour notice to their regulators', who:'Each EU customer\'s data protection authority',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'This clock belongs to the customers. For their employees\' data they are the controllers, and the controller notifies its regulator within 72 hours of becoming aware. Larkspur\'s job is to tell them fast and help. It shouldn\'t file on their behalf unless they ask.'},
+    {title:'Colorado: customers\' Colorado employees', who:'Each customer, as owner of the data',
+     start:{l5:'best', l3:'ok'}, rule:{unreas:'best', imm:'ok'}, ans:'l5', ansRule:'unreas',
+     why:'Under Colorado law, a third-party service provider must tell the covered entity (the customer) in the most expedient time possible and without unreasonable delay following discovery. The 30-day deadline to notify residents belongs to the customer, not to Larkspur, and it starts when the customer determines a breach occurred.'},
+    {title:'North Carolina: customers\' NC employees', who:'Each customer, as owner of the data',
+     start:{l5:'best', l3:'ok'}, rule:{imm:'best', unreas:'ok'}, ans:'l5', ansRule:'imm',
+     why:'North Carolina is stricter on the vendor: a business that maintains data it doesn\'t own must notify the owner immediately following discovery. The owners then notify their employees and the NC Attorney General without unreasonable delay. One incident, two neighboring rules: Colorado says "without unreasonable delay," North Carolina says "immediately."'},
+    {title:'SEC Form 8-K, Item 1.05', who:'Investors, in a public filing',
+     start:{}, rule:{na:'best'}, ans:null, ansRule:'na',
+     why:'Larkspur is privately held and doesn\'t file reports with the SEC, so Item 1.05 doesn\'t apply. Its customers that are public companies may have their own materiality call to make.'}
+  ]
+});
+
+/* ---------- helpers ---------- */
+var app = document.getElementById('app'), homeBtn = document.getElementById('homeBtn');
+var sc = null, picks = [], checked = false;
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function pad(n){return (n<10?'0':'')+n;}
+function dayName(abs){return DAYS[Math.floor(abs/1440)%7];}
+function clock(abs){var m=((abs%1440)+1440)%1440; return dayName(abs)+' '+pad(Math.floor(m/60))+':'+pad(m%60);}
+function weekTag(abs, ref){var w=Math.floor(abs/10080)-Math.floor(ref/10080); return w===1?' (next week)':w>1?' ('+w+' weeks on)':'';}
+function ev(id){for(var i=0;i<sc.events.length;i++) if(sc.events[i].id===id) return sc.events[i]; return null;}
+
+/* Deadline for a start event and a rule. Returns {txt, abs (for sorting; null if no fixed limit), soft} */
+function deadline(startId, ruleId){
+  var r = rule(ruleId), e = ev(startId);
+  if(!r || ruleId==='na') return null;
+  if(!e) return {txt:'Pick when the clock starts', abs:null};
+  var first = e.at;
+  if(r.h){ var a = e.at + r.h*60; return {txt:clock(a)+weekTag(a, first), abs:a}; }
+  if(r.bd){ var d = Math.floor(e.at/1440), n = 0; while(n<r.bd){ d++; if(d%7<5) n++; } var ab = d*1440+1439; return {txt:DAYS[d%7]+', end of day'+weekTag(ab, first), abs:ab}; }
+  if(r.d){ var dd = Math.floor(e.at/1440)+r.d, ad = dd*1440+1439; return {txt:DAYS[dd%7]+', '+r.d+' days after '+DAYS[Math.floor(e.at/1440)%7], abs:ad}; }
+  return {txt:'No fixed limit: as soon as reasonably possible, counted from '+clock(e.at), abs:null, soft:true};
+}
+function gradeRow(i){
+  var row = sc.rows[i], p = picks[i];
+  var rg = row.rule[p.rule] || 'poor';
+  if(row.ansRule==='na' || p.rule==='na') return row.ansRule==='na' ? rg : 'poor';
+  var sg = row.start[p.start] || 'poor';
+  var rank = {best:2, ok:1, poor:0};
+  return rank[rg] <= rank[sg] ? rg : sg;
+}
+
+/* ---------- screens ---------- */
+function home(){
+  sc = null; homeBtn.hidden = true;
+  var h = '<section class="intro"><div><span class="eyebrow">About 10 minutes per case</span><h2>One incident. Several clocks.</h2>'+
+  '<p class="lede">When an incident becomes a breach, the notification deadlines don\'t line up. They come from different laws and contracts, and they start at different moments. Map them for one company, then check your work.</p>'+
+  '<p class="note">The three companies are the ones from <a href="https://jckesler.github.io/the-2am-page/" target="_blank" rel="noopener">The 2AM Page</a>. You don\'t need to have played it first.</p></div>'+
+  '<aside class="rules"><h3>How it works</h3><ul><li>Read the case brief: the facts that decide which laws apply, and a timeline of what happened when.</li><li>For each requirement, pick when its clock starts and what the deadline is, or say it doesn\'t apply. The deadline is worked out for you as you go.</li><li>Check your map to see each answer explained, and the clocks in the order they run out.</li></ul></aside></section>'+
+  '<div class="cases">';
+  C.forEach(function(c,i){ h += '<button class="case" data-i="'+i+'"><span class="tag">'+esc(c.tag)+'</span><h3>'+esc(c.name)+'</h3><p>'+esc(c.sector)+'</p><p>'+esc(c.blurb)+'</p></button>'; });
+  h += '</div><p class="note" style="margin-top:14px">The companies are invented. The laws are real, simplified to fit an exercise, as of November 2026. This isn\'t legal advice.</p>';
+  app.innerHTML = h;
+  [].forEach.call(app.querySelectorAll('.case'), function(b){ b.onclick = function(){ start(+b.getAttribute('data-i')); }; });
+  window.scrollTo(0,0);
+}
+
+function start(i){
+  sc = C[i]; checked = false; homeBtn.hidden = false;
+  picks = sc.rows.map(function(){ return {start:'', rule:''}; });
+  render();
+  window.scrollTo(0,0);
+}
+
+function brief(){
+  var h = '<aside class="brief"><span class="tag">'+esc(sc.tag)+'</span><h2>'+esc(sc.name)+'</h2><div class="sub">'+esc(sc.sector)+'</div>';
+  h += '<h3>Facts that matter</h3><ul class="facts">';
+  sc.facts.forEach(function(f){ h += '<li>'+esc(f)+'</li>'; });
+  h += '</ul><h3>What happened when</h3><ol class="events">';
+  sc.events.forEach(function(e){ h += '<li><time>'+esc(clock(e.at))+'</time><span>'+esc(e.text)+'</span></li>'; });
+  return h + '</ol></aside>';
+}
+
+function rowHtml(row, i){
+  var p = picks[i], h = '<article class="clockrow'+(checked?' checked':'')+'" data-i="'+i+'"><h3>'+esc(row.title)+'</h3><div class="who">'+esc(row.who)+'</div><div class="pick">';
+  h += '<label>Deadline<select data-k="rule"'+(checked?' disabled':'')+'><option value="">Choose…</option>';
+  RULES.forEach(function(r){ h += '<option value="'+r.id+'"'+(p.rule===r.id?' selected':'')+'>'+esc(r.label)+'</option>'; });
+  h += '</select></label>';
+  var off = p.rule==='na';
+  h += '<label>Clock starts at<select data-k="start"'+(checked||off?' disabled':'')+'><option value="">Choose…</option>';
+  sc.events.forEach(function(e){ h += '<option value="'+e.id+'"'+(p.start===e.id?' selected':'')+'>'+esc(clock(e.at))+': '+esc(short(e.text))+'</option>'; });
+  h += '</select></label></div>';
+  h += '<div class="due" aria-live="polite">'+dueText(i)+'</div>';
+  if(checked) h += feedback(row, i);
+  return h + '</article>';
+}
+function short(s){ var w = s.split(' '); return w.length>9 ? w.slice(0,9).join(' ')+'…' : s; }
+function dueText(i){
+  var p = picks[i];
+  if(!p.rule) return '';
+  if(p.rule==='na') return 'Your answer: <b>doesn\'t apply</b>';
+  var d = deadline(p.start, p.rule);
+  return 'Your deadline: <b>'+esc(d.txt)+'</b>';
+}
+function feedback(row, i){
+  var g = gradeRow(i), lab = !picks[i].rule ? 'Not answered' : g==='best'?'Correct':g==='ok'?'Partly right':'Not quite';
+  var key;
+  if(row.ansRule==='na') key = 'Answer: doesn\'t apply';
+  else { var d = deadline(row.ans, row.ansRule); key = 'Answer: '+rule(row.ansRule).label.toLowerCase()+', from '+clock(ev(row.ans).at)+(d && d.abs!==null ? ' → '+d.txt : ''); }
+  return '<div class="fb '+g+'"><span class="verdict">'+lab+'</span><div class="key">'+esc(key)+'</div><p>'+esc(row.why)+'</p></div>';
+}
+
+function render(){
+  var done = picks.filter(function(p){ return p.rule && (p.rule==='na' || p.start); }).length;
+  var h = '<div class="board">'+brief()+'<section class="map"><h2>Map the clocks</h2><p>For each requirement, choose the deadline rule and when the clock starts. If it doesn\'t apply to '+esc(sc.name)+', choose that instead.</p><div class="clocks">';
+  sc.rows.forEach(function(r,i){ h += rowHtml(r,i); });
+  h += '</div><div class="actions">';
+  if(!checked) h += '<button class="primary" id="check">Check my map</button><span class="note" id="progress">'+done+' of '+sc.rows.length+' answered</span>';
+  else h += '<button class="primary" id="again">Try another case</button><button class="linkbtn" id="retry">Clear and retry this case</button>';
+  h += '</div>'+(checked?summary():'')+'</section></div>';
+  app.innerHTML = h;
+  wire();
+}
+
+function wire(){
+  [].forEach.call(app.querySelectorAll('.clockrow select'), function(s){
+    s.onchange = function(){
+      var i = +s.closest('.clockrow').getAttribute('data-i'), k = s.getAttribute('data-k');
+      picks[i][k] = s.value;
+      if(k==='rule'){ var st = s.closest('.clockrow').querySelector('select[data-k="start"]'); st.disabled = (s.value==='na'); }
+      s.closest('.clockrow').querySelector('.due').innerHTML = dueText(i);
+      var done = picks.filter(function(p){ return p.rule && (p.rule==='na' || p.start); }).length;
+      var pr = document.getElementById('progress'); if(pr) pr.textContent = done+' of '+sc.rows.length+' answered';
+    };
+  });
+  var ck = document.getElementById('check');
+  if(ck) ck.onclick = function(){
+    var missing = picks.filter(function(p){ return !(p.rule && (p.rule==='na' || p.start)); }).length;
+    if(missing){ var pr = document.getElementById('progress'); pr.textContent = missing+' still blank. Check anyway, or fill them in first.'; ck.textContent = 'Check anyway'; if(!ck.dataset.warned){ ck.dataset.warned = '1'; return; } }
+    checked = true; render();
+    var s = app.querySelector('.summary'); if(s) s.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'start'});
+  };
+  var ag = document.getElementById('again'); if(ag) ag.onclick = home;
+  var rt = document.getElementById('retry'); if(rt) rt.onclick = function(){ start(C.indexOf(sc)); };
+  var cp = document.getElementById('copy'); if(cp) cp.onclick = copyAnswers;
+}
+
+function summary(){
+  var pts = 0, best = 0;
+  sc.rows.forEach(function(r,i){ var g = gradeRow(i); pts += g==='best'?2:g==='ok'?1:0; if(g==='best') best++; });
+  var items = [];
+  sc.rows.forEach(function(r){ if(r.ansRule==='na') return; var d = deadline(r.ans, r.ansRule); items.push({r:r, d:d}); });
+  items.sort(function(a,b){
+    if(a.d.abs===null && b.d.abs===null) return 0;
+    if(a.d.abs===null) return -1; if(b.d.abs===null) return 1; return a.d.abs - b.d.abs; });
+  var h = '<section class="summary" tabindex="-1"><span class="eyebrow">Your map</span><h2>'+best+' of '+sc.rows.length+' correct</h2><p class="score">'+pts+' of '+(sc.rows.length*2)+' points (partly right counts for one)</p>';
+  h += '<h3 style="font-size:20px;margin-top:6px">The clocks, in the order they run out</h3><ol class="order">';
+  items.forEach(function(it){
+    var hard = it.d.abs!==null;
+    h += '<li class="'+(hard?'hard':'soft')+'"><span class="when">'+(hard?esc(it.d.txt):'No fixed limit')+'</span><span>'+esc(it.r.title)+'<small>'+esc(rule(it.r.ansRule).label)+', from '+esc(clock(ev(it.r.ans).at))+'</small></span></li>';
+  });
+  h += '</ol><p class="note" style="margin-top:12px">The "no fixed limit" clocks come first in practice. "Immediately" and "without undue delay" don\'t give you until the fixed deadlines below them. Look at what starts each clock: discovery, a confirmation, a formal determination, or a contract\'s own trigger. They rarely line up.</p>';
+  h += '<div class="actions"><button class="linkbtn" id="copy">Copy my answers</button><span class="copied" id="copied" aria-live="polite"></span></div></section>';
+  return h;
+}
+
+function copyAnswers(){
+  var lines = ['Breach the Clocks: '+sc.name, ''];
+  sc.rows.forEach(function(r,i){
+    var p = picks[i], g = gradeRow(i), mine;
+    if(!p.rule) mine = '(blank)';
+    else if(p.rule==='na') mine = 'Doesn\'t apply';
+    else { var e = ev(p.start), d = deadline(p.start, p.rule); mine = rule(p.rule).label+', from '+(e?clock(e.at):'(no start)')+(d && d.abs!==null?' -> '+d.txt:''); }
+    lines.push(r.title+': '+mine+'  ['+(g==='best'?'correct':g==='ok'?'partly right':'not quite')+']');
+  });
+  var best = sc.rows.filter(function(r,i){ return gradeRow(i)==='best'; }).length;
+  lines.push('', best+' of '+sc.rows.length+' correct');
+  var text = lines.join('\n'), out = document.getElementById('copied');
+  function fallback(){ var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly',''); ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); var ok=false; try{ ok = document.execCommand('copy'); }catch(e){} document.body.removeChild(ta); out.textContent = ok ? 'Copied.' : 'Copy didn\'t work in this browser. Select the text manually.'; }
+  try{ if(navigator.clipboard && window.isSecureContext){ navigator.clipboard.writeText(text).then(function(){ out.textContent='Copied.'; }, fallback); } else fallback(); }catch(e){ fallback(); }
+}
+
+homeBtn.onclick = home;
+home();
+})();
+</script>
+</body>
+</html>
