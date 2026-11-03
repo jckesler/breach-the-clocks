@@ -104,6 +104,20 @@ a{color:var(--aqua)}
 .order .hard .when{color:var(--red)}
 .order small{display:block;color:var(--muted);font-size:13px}
 .copied{font-size:13px;color:var(--good)}
+.ref{margin:0 0 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
+.ref summary{cursor:pointer;padding:12px 16px;font-weight:600;list-style-position:inside}
+.ref summary span{font-weight:400;color:var(--muted);font-size:14px}
+.ref-body{padding:0 16px 14px;border-top:1px solid var(--line)}
+.ref-body > p{font-size:14px;color:var(--muted);margin:10px 0 4px}
+.ref h4{font-family:var(--f-display);font-size:18px;font-weight:600;margin:14px 0 4px}
+.ref-list{list-style:none;margin:0;padding:0}
+.ref-list li{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:4px 14px;padding:8px 0;border-top:1px dashed var(--line);font-size:14px}
+.ref-list li:first-child{border-top:0}
+.ref-list b{font-weight:600}
+.ref-list .lbl{display:block;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ref-list .note{grid-column:1/-1;font-size:13px}
+@media (max-width:640px){.ref-list li{grid-template-columns:minmax(0,1fr)}}
+@media (min-width:641px){.ref-list li:not(:first-child) .lbl{display:none}}
 .credit{margin-top:32px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
 .credit a{color:inherit}
 @media (max-width:860px){.intro,.board,.cases{grid-template-columns:minmax(0,1fr)}.brief{position:static;max-height:none}.intro h2{font-size:34px}}
@@ -299,13 +313,52 @@ function gradeRow(i){
   return rank[rg] <= rank[sg] ? rg : sg;
 }
 
+/* Clock reference: the rules, not the answers. Includes rules that apply to none of the cases. */
+var REF = [
+ {g:'HIPAA (health plans, clearinghouses, most providers, and their business associates)', items:[
+  {r:'Notice to individuals', s:'Discovery: the first day the breach is known, or would have been known with reasonable diligence', d:'Without unreasonable delay, and no later than 60 calendar days'},
+  {r:'Notice to HHS', s:'Same as individuals', d:'500 or more affected: at the same time as individuals. Fewer than 500: in an annual log, within 60 days of year-end'},
+  {r:'Notice to the media', s:'Same as individuals', d:'Required in each state with more than 500 affected residents, on the same timetable'}]},
+ {g:'SEC (companies that file reports with the SEC)', items:[
+  {r:'Form 8-K, Item 1.05, to investors', s:'The determination that the incident is material (which must itself be made without unreasonable delay)', d:'4 business days; the determination day doesn\'t count'}]},
+ {g:'GDPR (organizations established in the EU, or offering goods or services to people in the EU)', items:[
+  {r:'Article 33(1): controller to its supervisory authority', s:'Becoming aware: a reasonable degree of certainty that personal data was compromised', d:'Without undue delay and, where feasible, within 72 hours, unless the breach is unlikely to result in a risk to people'},
+  {r:'Article 33(2): processor to controller', s:'The processor becoming aware', d:'Without undue delay. The controller\'s own 72 hours start when it hears from the processor'},
+  {r:'Article 34: controller to individuals', s:'When the breach is likely to result in a high risk to people', d:'Without undue delay'}]},
+ {g:'Financial regulators', items:[
+  {r:'US banking agencies: bank to its primary federal regulator', s:'Determining that a notification incident occurred', d:'As soon as possible, and no later than 36 hours'},
+  {r:'NYDFS Part 500: regulated firm to DFS', s:'Determining that a reportable cybersecurity incident occurred', d:'72 hours (and 24 hours after any extortion payment)'}]},
+ {g:'North Carolina (names plus SSN, driver\'s license, state ID or passport numbers, account numbers and similar; not medical information)', items:[
+  {r:'Data owner to affected residents and the AG\'s Consumer Protection Division', s:'Discovery of the breach', d:'Without unreasonable delay'},
+  {r:'Data owner to the nationwide credit bureaus', s:'Discovery of the breach', d:'Without unreasonable delay, if it notifies more than 1,000 people at one time'},
+  {r:'A business holding data it doesn\'t own, to the owner', s:'Discovery of the breach', d:'Immediately'}]},
+ {g:'Colorado (names plus SSN, driver\'s license, medical or health insurance information, account numbers and similar)', items:[
+  {r:'Covered entity (the data owner) to affected residents', s:'Determination that a breach occurred: when there\'s sufficient evidence to conclude one took place', d:'Most expedient time possible, and no later than 30 days'},
+  {r:'Covered entity to the Colorado AG', s:'Same determination', d:'No later than 30 days, if 500 or more Colorado residents are affected'},
+  {r:'Third-party service provider to the covered entity', s:'Discovery of the breach', d:'Most expedient time possible and without unreasonable delay'}]},
+ {g:'Virginia', items:[
+  {r:'General breach law: owner to residents and the AG', s:'Discovery of the breach', d:'Without unreasonable delay. Covers names plus SSN, driver\'s license, financial account, passport or military ID numbers'},
+  {r:'Medical information breach law', s:'Discovery of the breach', d:'Without unreasonable delay. Covers medical and health insurance information, but doesn\'t apply to HIPAA covered entities or business associates'}]},
+ {g:'Contracts', items:[
+  {r:'Vendor to customer', s:'Whatever trigger the contract names, such as "confirming" an incident', d:'Whatever the contract says; 24 to 72 hours is common'}]}
+];
+var refOpen = false;
+function refHtml(){
+  var h = '<details class="ref"'+(refOpen?' open':'')+'><summary>Clock reference <span>· the rules, so you can match them to the facts</span></summary><div class="ref-body"><p>Not every rule here applies to every company. Deciding which ones do is part of the exercise.</p>';
+  REF.forEach(function(g){
+    h += '<h4>'+esc(g.g)+'</h4><ul class="ref-list">';
+    g.items.forEach(function(it){ h += '<li><span><span class="lbl">Rule</span><b>'+esc(it.r)+'</b></span><span><span class="lbl">Clock starts</span>'+esc(it.s)+'</span><span><span class="lbl">Deadline</span>'+esc(it.d)+'</span></li>'; });
+    h += '</ul>';
+  });
+  return h + '<p>Simplified, as of November 2026. Not legal advice.</p></div></details>';
+}
 /* ---------- screens ---------- */
 function home(){
   sc = null; homeBtn.hidden = true;
   var h = '<section class="intro"><div><span class="eyebrow">About 10 minutes per case</span><h2>One incident. Several clocks.</h2>'+
   '<p class="lede">When an incident becomes a breach, the notification deadlines don\'t line up. They come from different laws and contracts, and they start at different moments. Map them for one company, then check your work.</p>'+
   '<p class="note">The three companies are the ones from <a href="https://jckesler.github.io/the-2am-page/" target="_blank" rel="noopener">The 2AM Page</a>. You don\'t need to have played it first.</p></div>'+
-  '<aside class="rules"><h3>How it works</h3><ul><li>Read the case brief: the facts that decide which laws apply, and a timeline of what happened when.</li><li>For each requirement, pick when its clock starts and what the deadline is, or say it doesn\'t apply. The deadline is worked out for you as you go.</li><li>Check your map to see each answer explained, and the clocks in the order they run out.</li></ul></aside></section>'+
+  '<aside class="rules"><h3>How it works</h3><ul><li>Read the case brief: the facts that decide which laws apply, and a timeline of what happened when.</li><li>Open the clock reference if you need it: it lists the rules, and you decide which ones fit.</li><li>For each requirement, pick when its clock starts and what the deadline is, or say it doesn\'t apply. The deadline is worked out for you as you go.</li><li>Check your map to see each answer explained, and the clocks in the order they run out.</li></ul></aside></section>'+
   '<div class="cases">';
   C.forEach(function(c,i){ h += '<button class="case" data-i="'+i+'"><span class="tag">'+esc(c.tag)+'</span><h3>'+esc(c.name)+'</h3><p>'+esc(c.sector)+'</p><p>'+esc(c.blurb)+'</p></button>'; });
   h += '</div><p class="note" style="margin-top:14px">The companies are invented. The laws are real, simplified to fit an exercise, as of November 2026. This isn\'t legal advice.</p>';
@@ -361,7 +414,7 @@ function feedback(row, i){
 
 function render(){
   var done = picks.filter(function(p){ return p.rule && (p.rule==='na' || p.start); }).length;
-  var h = '<div class="board">'+brief()+'<section class="map"><h2>Map the clocks</h2><p>For each requirement, choose the deadline rule and when the clock starts. If it doesn\'t apply to '+esc(sc.name)+', choose that instead.</p><div class="clocks">';
+  var h = '<div class="board">'+brief()+'<section class="map"><h2>Map the clocks</h2><p>For each requirement, choose the deadline rule and when the clock starts. If it doesn\'t apply to '+esc(sc.name)+', choose that instead.</p>'+refHtml()+'<div class="clocks">';
   sc.rows.forEach(function(r,i){ h += rowHtml(r,i); });
   h += '</div><div class="actions">';
   if(!checked) h += '<button class="primary" id="check">Check my map</button><span class="note" id="progress">'+done+' of '+sc.rows.length+' answered</span>';
@@ -372,6 +425,7 @@ function render(){
 }
 
 function wire(){
+  var rf = app.querySelector('.ref'); if(rf) rf.addEventListener('toggle', function(){ refOpen = rf.open; });
   [].forEach.call(app.querySelectorAll('.clockrow select'), function(s){
     s.onchange = function(){
       var i = +s.closest('.clockrow').getAttribute('data-i'), k = s.getAttribute('data-k');

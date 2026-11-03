@@ -22,6 +22,7 @@ The companies are invented.
 
 - Each case has a brief: the facts that decide which laws apply, and a timeline of what happened when.
 - For each requirement, you choose the deadline rule and the event that starts the clock, or say it doesn't apply. The app works out the actual deadline as you go.
+- A clock reference lists the rules (who tells whom, what starts the clock, the deadline), including some that apply to none of the cases, so the work is matching rules to facts.
 - Checking your map explains every answer, including the ones that don't apply, and lists the clocks in the order they run out.
 - A "Copy my answers" button puts a plain-text summary on the clipboard, for anyone who needs to hand it in.
 
